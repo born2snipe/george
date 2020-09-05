@@ -6,36 +6,60 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class RenumberTrackMetadataForMultipleAlbumsCommandTest {
     public static final String AUDIO_FILE_EXTENSION = "m4a";
 
     @TempDir
     Path temp;
+    @InjectMocks
     private RenumberTrackMetadataForMultipleAlbumsCommand cmd;
+    @Mock
+    private UpdateTrackNumberInMetaData updater;
+
     private File rootDir;
     private File outputDir;
     private File inputDir;
 
     @BeforeEach
     void setUp() {
-        cmd = new RenumberTrackMetadataForMultipleAlbumsCommand();
-
         rootDir = temp.toFile();
         inputDir = new File(rootDir, "input");
         outputDir = new File(rootDir, "output");
 
         inputDir.mkdirs();
         outputDir.mkdirs();
+    }
+
+    @Test
+    public void copied_files_should_have_their_track_number_updated() {
+        List<File> inputFiles = generateRandomFilesIn(inputDir, 5, 5, AUDIO_FILE_EXTENSION);
+        List<File> outputFiles = inputFiles.stream()
+                .map((f) -> new File(outputDir, f.getName()))
+                .collect(Collectors.toList());
+
+        cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
+
+
+        for (int i = 0; i < outputFiles.size(); i++) {
+            verify(updater).update(outputFiles.get(i), StringUtils.leftPad(String.valueOf(i + 1), 3, "0"));
+        }
     }
 
     @Test
@@ -139,7 +163,7 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
         ArrayList<File> trackFiles = new ArrayList<>();
 
         for (int i = 1; i <= discCount; i++) {
-            for (int j = 0; j < trackCount; j++) {
+            for (int j = 1; j <= trackCount; j++) {
                 File file = new File(inputDir, i + "-" + StringUtils.leftPad(String.valueOf(j), 3, "0") + " " + UUID.randomUUID().toString() + "." + fileExtension);
                 trackFiles.add(file);
                 writeRandomValueToFile(file);
