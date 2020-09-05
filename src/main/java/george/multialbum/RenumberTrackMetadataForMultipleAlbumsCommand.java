@@ -1,6 +1,7 @@
 package george.multialbum;
 
 import cli.pi.AppInfo;
+import cli.pi.CliLog;
 import cli.pi.command.CliCommand;
 import cli.pi.command.CommandContext;
 import com.github.born2snipe.cli.CountUpToTotalPrinter;
@@ -61,23 +62,39 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
             outputDir.mkdirs();
         }
 
+        List<File> copiedFiles = copyFilesToOutputDir(commandContext, inputDir, outputDir);
+
+        copiedFiles.size();
+    }
+
+    private List<File> copyFilesToOutputDir(CommandContext commandContext, File inputDir, File outputDir) {
         List<File> audioFiles = Arrays.stream(inputDir.listFiles())
                 .filter(this::isNotDirectory)
                 .filter(this::isAudioFile)
+                .filter(this::isAudioFileThatIsPartOfTheDiskSet)
                 .collect(Collectors.toList());
 
         CountUpToTotalPrinter progressPrinter = new CountUpToTotalPrinter(audioFiles.size());
         commandContext.getLog().warn("Copying {0} file(s)...", audioFiles.size());
 
-        Flux.fromIterable(audioFiles)
+        List<File> copiedFiles = Flux.fromIterable(audioFiles)
                 .flatMap((inputFile) -> copyFileTo(inputFile, outputDir))
                 .doOnNext((outputFile) -> {
                     progressPrinter.println("Copied: " + outputFile.getName());
                     progressPrinter.step();
                 })
                 .subscribeOn(scheduler)
-                .blockLast()
-        ;
+                .collectList()
+                .block();
+        return copiedFiles;
+    }
+
+    private boolean isAudioFileThatIsPartOfTheDiskSet(File file) {
+        boolean matchesPattern = file.getName().matches("[0-9]+?-[0-9]+? .+?\\." + AUDIO_FILE_EXTENSION);
+        if (!matchesPattern) {
+            new CliLog().warn("Ignoring file ({0}), since the filename does NOT match the correct pattern", file.getName());
+        }
+        return matchesPattern;
     }
 
     private boolean isAudioFile(File file) {

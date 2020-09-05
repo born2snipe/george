@@ -3,16 +3,16 @@ package george.multialbum;
 import cli.pi.command.ArgsParsingException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,11 +39,21 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
     }
 
     @Test
+    public void ignore_audio_files_that_do_not_have_the_correct_filename_prefix() {
+        File randomTrack = new File(inputDir, "should-not-be-copied." + AUDIO_FILE_EXTENSION);
+        writeRandomValueToFile(randomTrack);
+
+        cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
+
+        assertEquals(0, outputDir.listFiles().length);
+    }
+
+    @Test
     public void ignore_not_audio_files() {
         File nestedDir = new File(inputDir, "nested");
         nestedDir.mkdirs();
 
-        List<File> inputFiles = generateRandomFilesIn(inputDir, "txt");
+        List<File> inputFiles = generateRandomFilesIn(inputDir, 1, 1, "txt");
 
         cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
 
@@ -55,7 +65,7 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
         File nestedDir = new File(inputDir, "nested");
         nestedDir.mkdirs();
 
-        List<File> inputFiles = generateRandomFilesIn(inputDir, AUDIO_FILE_EXTENSION);
+        List<File> inputFiles = generateRandomFilesIn(inputDir, 1, 1, AUDIO_FILE_EXTENSION);
 
         cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
 
@@ -64,7 +74,7 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
 
     @Test
     public void copy_files_to_output_dir() {
-        List<File> inputFiles = generateRandomFilesIn(inputDir, AUDIO_FILE_EXTENSION);
+        List<File> inputFiles = generateRandomFilesIn(inputDir, 1, 1, AUDIO_FILE_EXTENSION);
 
         cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
 
@@ -125,10 +135,17 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
         });
     }
 
-    private List<File> generateRandomFilesIn(File inputDir, String fileExtension) {
-        return IntStream.range(0, 10)
-                .mapToObj((i) -> new File(inputDir, i + "." + fileExtension))
-                .peek(this::writeRandomValueToFile)
-                .collect(Collectors.toList());
+    private List<File> generateRandomFilesIn(File inputDir, int discCount, int trackCount, String fileExtension) {
+        ArrayList<File> trackFiles = new ArrayList<>();
+
+        for (int i = 1; i <= discCount; i++) {
+            for (int j = 0; j < trackCount; j++) {
+                File file = new File(inputDir, i + "-" + StringUtils.leftPad(String.valueOf(j), 3, "0") + " " + UUID.randomUUID().toString() + "." + fileExtension);
+                trackFiles.add(file);
+                writeRandomValueToFile(file);
+            }
+        }
+
+        return trackFiles;
     }
 }
