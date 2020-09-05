@@ -16,8 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static reactor.core.scheduler.Schedulers.parallel;
 
 @MetaInfServices
@@ -28,11 +28,13 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
 
     public RenumberTrackMetadataForMultipleAlbumsCommand() {
         argsParser.addArgument("-i", "--input-dir")
+                .metavar("PATH")
                 .required(true)
                 .dest("input")
                 .help("Path to directory to copy files from");
 
         argsParser.addArgument("-o", "--output-dir")
+                .metavar("PATH")
                 .required(true)
                 .dest("output")
                 .help("Path to directory to copy files to");
@@ -72,7 +74,7 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
                 .filter(this::isNotDirectory)
                 .filter(this::isAudioFile)
                 .filter(this::isAudioFileThatIsPartOfTheDiskSet)
-                .collect(Collectors.toList());
+                .collect(toList());
 
         CountUpToTotalPrinter progressPrinter = new CountUpToTotalPrinter(audioFiles.size());
         commandContext.getLog().warn("Copying {0} file(s)...", audioFiles.size());
