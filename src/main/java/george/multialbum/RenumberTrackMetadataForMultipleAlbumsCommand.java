@@ -6,7 +6,6 @@ import cli.pi.command.CliCommand;
 import cli.pi.command.CommandContext;
 import com.github.born2snipe.cli.CountUpToTotalPrinter;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.MetaInfServices;
 import reactor.core.publisher.Flux;
@@ -15,10 +14,13 @@ import reactor.core.scheduler.Scheduler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.stream.Collectors.toList;
 import static reactor.core.scheduler.Schedulers.parallel;
 
@@ -132,7 +134,7 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
             File outputFile = new File(outputDir, inputFile.getName());
 
             try {
-                FileUtils.copyFile(inputFile, outputFile);
+                Files.copy(inputFile.toPath(), outputFile.toPath(), REPLACE_EXISTING, COPY_ATTRIBUTES);
                 return outputFile;
             } catch (IOException e) {
                 throw new RuntimeException("Failed to write file: " + outputFile.getAbsolutePath(), e);
