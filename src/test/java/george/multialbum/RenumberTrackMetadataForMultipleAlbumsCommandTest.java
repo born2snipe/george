@@ -75,10 +75,9 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
 
     @Test
     public void output_dir_does_not_exist() {
-        assertThrows(DirectoryDoesNotExistException.class, () -> cmd.execute(
-                "-i", inputDir.getAbsolutePath(),
-                "-o", new File(rootDir, "does-not-exist").getAbsolutePath()
-        ));
+        File outputDir = new File(rootDir, "does-not-exist");
+        cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
+        assertTrue(outputDir.exists());
     }
 
     @Test
