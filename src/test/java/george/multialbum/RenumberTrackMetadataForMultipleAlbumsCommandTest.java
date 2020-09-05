@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RenumberTrackMetadataForMultipleAlbumsCommandTest {
+    public static final String AUDIO_FILE_EXTENSION = "m4a";
 
     @TempDir
     Path temp;
@@ -37,14 +38,24 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
         outputDir.mkdirs();
     }
 
-    // todo - handle directories not existing
+    @Test
+    public void ignore_not_audio_files() {
+        File nestedDir = new File(inputDir, "nested");
+        nestedDir.mkdirs();
+
+        List<File> inputFiles = generateRandomFilesIn(inputDir, "txt");
+
+        cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
+
+        assertEquals(0, outputDir.listFiles().length);
+    }
 
     @Test
     public void ignore_directories_in_the_input_directory() {
         File nestedDir = new File(inputDir, "nested");
         nestedDir.mkdirs();
 
-        List<File> inputFiles = generateRandomFilesIn(inputDir);
+        List<File> inputFiles = generateRandomFilesIn(inputDir, AUDIO_FILE_EXTENSION);
 
         cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
 
@@ -53,7 +64,7 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
 
     @Test
     public void copy_files_to_output_dir() {
-        List<File> inputFiles = generateRandomFilesIn(inputDir);
+        List<File> inputFiles = generateRandomFilesIn(inputDir, AUDIO_FILE_EXTENSION);
 
         cmd.execute("-i", inputDir.getAbsolutePath(), "-o", outputDir.getAbsolutePath());
 
@@ -114,9 +125,9 @@ class RenumberTrackMetadataForMultipleAlbumsCommandTest {
         });
     }
 
-    private List<File> generateRandomFilesIn(File inputDir) {
+    private List<File> generateRandomFilesIn(File inputDir, String fileExtension) {
         return IntStream.range(0, 10)
-                .mapToObj((i) -> new File(inputDir, i + ".txt"))
+                .mapToObj((i) -> new File(inputDir, i + "." + fileExtension))
                 .peek(this::writeRandomValueToFile)
                 .collect(Collectors.toList());
     }

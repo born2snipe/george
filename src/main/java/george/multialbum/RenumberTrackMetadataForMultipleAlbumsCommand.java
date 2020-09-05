@@ -21,6 +21,7 @@ import static reactor.core.scheduler.Schedulers.parallel;
 
 @MetaInfServices
 public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
+    public static final String AUDIO_FILE_EXTENSION = "m4a";
 
     private final Scheduler scheduler = parallel();
 
@@ -62,6 +63,7 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
 
         List<File> audioFiles = Arrays.stream(inputDir.listFiles())
                 .filter(this::isNotDirectory)
+                .filter(this::isAudioFile)
                 .collect(Collectors.toList());
 
         CountUpToTotalPrinter progressPrinter = new CountUpToTotalPrinter(audioFiles.size());
@@ -73,6 +75,10 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
                 .subscribeOn(scheduler)
                 .blockLast()
         ;
+    }
+
+    private boolean isAudioFile(File file) {
+        return file.getName().endsWith("." + AUDIO_FILE_EXTENSION);
     }
 
     private boolean isNotDirectory(File file) {
