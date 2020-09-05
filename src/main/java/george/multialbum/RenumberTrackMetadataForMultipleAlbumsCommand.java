@@ -71,7 +71,10 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
 
         Flux.fromIterable(audioFiles)
                 .flatMap((inputFile) -> copyFileTo(inputFile, outputDir))
-                .doOnNext((outputFile) -> progressPrinter.step())
+                .doOnNext((outputFile) -> {
+                    progressPrinter.println("Copied: " + outputFile.getName());
+                    progressPrinter.step();
+                })
                 .subscribeOn(scheduler)
                 .blockLast()
         ;
