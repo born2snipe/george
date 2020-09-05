@@ -25,13 +25,13 @@ import static java.util.stream.Collectors.toList;
 import static reactor.core.scheduler.Schedulers.parallel;
 
 @MetaInfServices
-public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
+public class RenumberTrackMetadataForMultipleDiskAlbumCommand extends CliCommand {
     public static final String AUDIO_FILE_EXTENSION = "m4a";
 
     private final Scheduler scheduler = parallel();
     private UpdateTrackNumberInMetaData updateTrackNumberInMetaData = new UpdateTrackNumberInMetaData();
 
-    public RenumberTrackMetadataForMultipleAlbumsCommand() {
+    public RenumberTrackMetadataForMultipleDiskAlbumCommand() {
         argsParser.addArgument("-i", "--input-dir")
                 .metavar("PATH")
                 .required(true)
@@ -47,7 +47,7 @@ public class RenumberTrackMetadataForMultipleAlbumsCommand extends CliCommand {
 
     @Override
     public String getName() {
-        return "renumber-track-metadata-for-multi-albums";
+        return "renumber-track-metadata";
     }
 
     @Override

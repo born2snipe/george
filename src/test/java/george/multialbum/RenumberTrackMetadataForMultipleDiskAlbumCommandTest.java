@@ -23,13 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class RenumberTrackMetadataForMultipleAlbumsCommandTest {
+class RenumberTrackMetadataForMultipleDiskAlbumCommandTest {
     public static final String AUDIO_FILE_EXTENSION = "m4a";
 
     @TempDir
     Path temp;
     @InjectMocks
-    private RenumberTrackMetadataForMultipleAlbumsCommand cmd;
+    private RenumberTrackMetadataForMultipleDiskAlbumCommand cmd;
     @Mock
     private UpdateTrackNumberInMetaData updater;
 
