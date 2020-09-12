@@ -66,7 +66,11 @@ public class RenumberTrackMetadataForMultipleDiskAlbumCommand extends CliCommand
         }
 
         if (!outputDir.exists()) {
-            outputDir.mkdirs();
+            if (outputDir.mkdirs()) {
+                commandContext.getLog().info("Created output directory...");
+            } else {
+                commandContext.getLog().warn("Failed making output directory!");
+            }
         }
 
         List<DiskTrack> tracks = copyFilesToOutputDir(commandContext, inputDir, outputDir);
@@ -102,6 +106,11 @@ public class RenumberTrackMetadataForMultipleDiskAlbumCommand extends CliCommand
                 .filter(this::isAudioFile)
                 .filter(this::isAudioFileThatIsPartOfTheDiskSet)
                 .collect(toList());
+
+        if (audioFiles.isEmpty()) {
+            commandContext.getLog().warn("No audio files found to copy.");
+            return Collections.emptyList();
+        }
 
         CountUpToTotalPrinter progressPrinter = new CountUpToTotalPrinter(audioFiles.size());
         progressPrinter.setMessageFormat("Copied: {count} of {total}");
