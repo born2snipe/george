@@ -1,5 +1,3 @@
 @echo off
 
-set JAVA_HOME=jre\bin
-
-%JAVA_HOME%\java -jar george.jar %*
+.\jre\bin\java -jar george.jar %*
