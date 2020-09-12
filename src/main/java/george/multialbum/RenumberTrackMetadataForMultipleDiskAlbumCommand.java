@@ -90,7 +90,14 @@ public class RenumberTrackMetadataForMultipleDiskAlbumCommand extends CliCommand
     }
 
     private List<DiskTrack> copyFilesToOutputDir(CommandContext commandContext, File inputDir, File outputDir) {
-        List<File> audioFiles = Arrays.stream(inputDir.listFiles())
+        File[] filesOnDisk = inputDir.listFiles();
+        if (filesOnDisk == null) {
+            throw new IllegalStateException("For some reason we are unable to get the list of files on disk.\n" +
+                    inputDir.getAbsolutePath() +
+                    "\n ¯\\_(ツ)_/¯");
+        }
+
+        List<File> audioFiles = Arrays.stream(filesOnDisk)
                 .filter(this::isNotDirectory)
                 .filter(this::isAudioFile)
                 .filter(this::isAudioFileThatIsPartOfTheDiskSet)
