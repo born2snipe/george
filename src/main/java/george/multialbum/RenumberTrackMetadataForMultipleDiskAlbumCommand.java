@@ -159,3 +159,4 @@ public class RenumberTrackMetadataForMultipleDiskAlbumCommand extends CliCommand
 
     }
 }
+
